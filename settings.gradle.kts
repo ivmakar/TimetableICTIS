@@ -13,7 +13,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Расписание ИКТИБ"
+rootProject.name = "Timetable"
 include(":app")
 include(":sources:core")
 include(":sources:scheduler")
