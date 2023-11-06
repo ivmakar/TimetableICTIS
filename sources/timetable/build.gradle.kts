@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "ru.ivmak.timetable"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24

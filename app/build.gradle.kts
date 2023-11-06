@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "ru.ivmak.raspisanie_iktib"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "ru.ivmak.raspisanie_iktib"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
