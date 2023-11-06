@@ -15,4 +15,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "Расписание ИКТИБ"
 include(":app")
- 
+include(":sources:core")
+include(":sources:scheduler")
+include(":sources:search")
+include(":sources:timetable")
