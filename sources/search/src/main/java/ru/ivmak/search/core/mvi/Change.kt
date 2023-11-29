@@ -7,5 +7,4 @@ sealed class Change {
     data class ListLoaded(val items: List<ChoiceList.Choice>) : Change()
     data class QueryChanged(val query: String) : Change()
     object Error: Change()
-    object ClearError: Change()
 }

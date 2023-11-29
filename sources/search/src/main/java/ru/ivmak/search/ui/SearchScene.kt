@@ -1,100 +1,137 @@
 package ru.ivmak.search.ui
 
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import ru.ivmak.search.core.mvi.Action
 import ru.ivmak.search.core.mvi.State
-import ru.ivmak.search.core.network.models.ChoiceList
-import ru.ivmak.search.ui.components.SearchBarUI
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScene(
     navController: NavController,
     searchViewModel: SearchViewModel = hiltViewModel()
 ) {
 
-    val state: State by if (LocalInspectionMode.current)
-            remember { mutableStateOf(State()) }
-        else
-            searchViewModel.observableState.collectAsStateWithLifecycle()
+    val state: State by searchViewModel.observableState.collectAsStateWithLifecycle()
 
-    SearchBarUI(
-        searchText = state.searchQuery,
-        placeholderText = "Placeholder",
-        onSearchTextChanged = { searchViewModel.dispatch(Action.SearchQueryChanged(it)) },
-        onClearClick = { searchViewModel.dispatch(Action.SearchQueryChanged("")) },
-        onNavigateBack = { navController.popBackStack() },
+    var isActive by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter
     ) {
-        if (state.isError) {
-            ErrorView()
-            return@SearchBarUI
-        }
+        SearchBar(
+            query = state.searchQuery,
+            placeholder = { Text(text = "Placeholder") },
+            onQueryChange = { searchViewModel.dispatch(Action.SearchQueryChanged(it)) },
+            onSearch = { searchViewModel.dispatch(Action.SearchQueryChanged(it)) },
+            active = isActive,
+            onActiveChange = { isActive = it },
+            trailingIcon = {
+                if (isActive) {
+                    IconButton(onClick = { searchViewModel.dispatch(Action.SearchQueryChanged("")) }) {
+                        Icon(
+                            imageVector = Icons.Filled.Clear,
+                            contentDescription = "Clear"
+                        )
+                    }
+                } else {
+                    IconButton(onClick = { isActive = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search"
+                        )
+                    }
+                }
+            },
+            leadingIcon = {
+                IconButton(onClick = {
+                    if (isActive) {
+                        isActive = false
+                    } else {
+                        navController.popBackStack()
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            }
+        ) {
+            if (state.isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+                return@SearchBar
+            }
 
-        if (state.isLoading) {
-            LoadingView()
-            return@SearchBarUI
-        }
+            if (state.isError) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Ошибка при загрузке :(",
+                        fontSize = TextUnit(24f, TextUnitType.Sp)
+                    )
+                    Button(onClick = { searchViewModel.dispatch(Action.SearchQueryChanged(state.searchQuery)) }) {
+                        Text(text = "Попробовать еще раз")
+                    }
+                }
+                return@SearchBar
+            }
 
-        if (state.items.isEmpty()) {
-            EmptyView()
-        } else {
-            ListView(state.items)
-        }
+            LazyColumn {
+                items(state.items) {
+                    ListItem(
+                        modifier = Modifier.clickable { /*TODO:*/ },
+                        headlineContent = { Text(text = it.name) },
+                    )
 
-    }
-}
-
-@Composable
-fun ListView(items: List<ChoiceList.Choice>) {
-    Box {
-        LazyColumn {
-            items(items) {
-                SearchResultItem(text = it.name)
+                }
             }
         }
-    }
-}
-
-@Composable
-fun EmptyView() {
-    Box {
-        Text(text = "Empty")
-    }
-}
-
-@Composable
-fun ErrorView() {
-    Box {
-        Text(text = "Error")
-    }
-}
-
-@Composable
-fun LoadingView() {
-    Box {
-        Text(text = "Loading")
-    }
-}
-
-@Composable
-fun SearchResultItem(text: String) {
-    Box {
-        Text(text = text)
     }
 }
 

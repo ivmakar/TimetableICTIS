@@ -35,18 +35,19 @@ class SearchViewModel @Inject constructor(
     private val reducer: Reducer<State, Change> = { state, change ->
         Log.d(TAG, "Received Change: $change\n$state")
         when (change) {
-            is Change.Loading -> state.copy(isLoading = state.items.isEmpty())
+            is Change.Loading -> state.copy(isLoading = state.items.isEmpty(), isError = false)
             is Change.ListLoaded -> state.copy(
+                isError = false,
                 isLoading = false,
                 items = change.items,
             )
 
             is Change.Error -> state.copy(
+                items = listOf(),
                 isLoading = false,
                 isError = true,
             )
 
-            is Change.ClearError -> state.copy(isError = false)
             is Change.QueryChanged -> state.copy(searchQuery = change.query)
         }
     }
@@ -78,11 +79,7 @@ class SearchViewModel @Inject constructor(
                     }
                 }
 
-            val errorShownChange = actions
-                .filterIsInstance<Action.ErrorShown>()
-                .map { Change.ClearError }
-
-            val allChanges = merge(searchQueryChanged, itemsLoadedChange, errorShownChange)
+            val allChanges = merge(searchQueryChanged, itemsLoadedChange)
 
             allChanges
                 .scan(initialState, reducer)
@@ -95,13 +92,11 @@ class SearchViewModel @Inject constructor(
     }
 
     private fun buildSearchAction(action: Action.SearchQueryChanged): Flow<Action> = flow {
-        if (action.query.isEmpty()) {
-            emit(Action.LoadChoices(""))
-        } else {
-            emit(action)
+        emit(action)
+        if (action.query.isNotEmpty()) {
             delay(500)
-            emit(Action.LoadChoices(action.query))
         }
+        emit(Action.LoadChoices(action.query))
     }
 
 }
