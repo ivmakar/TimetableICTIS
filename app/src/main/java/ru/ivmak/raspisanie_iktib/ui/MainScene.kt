@@ -1,6 +1,5 @@
 package ru.ivmak.raspisanie_iktib.ui
 
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,16 +16,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import ru.ivmak.raspisanie_iktib.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScene() {
-
-    val context = LocalContext.current
+fun MainScene(
+    navController: NavController
+) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -41,7 +41,7 @@ fun MainScene() {
                         text = "КТбо4-7",
                         modifier = Modifier
                             .clickable {
-                                Toast.makeText(context, "Clicked", Toast.LENGTH_SHORT).show()
+                                navController.navigate(Screen.Search.route)
                             },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -71,6 +71,6 @@ fun MainScene() {
 @Composable
 fun MainScenePreview() {
     AppTheme {
-        MainScene()
+        MainScene(rememberNavController())
     }
 }
