@@ -2,11 +2,18 @@ package ru.ivmak.search.ui
 
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
@@ -22,15 +29,30 @@ import ru.ivmak.search.core.mvi.Action
 import ru.ivmak.search.core.mvi.Change
 import ru.ivmak.search.core.mvi.State
 import ru.ivmak.search.core.repo.SearchRepo
+import ru.ivmak.search.ui.models.UiChoice
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val repo: SearchRepo
-) : BaseViewModel<Action, State>() {
+) : ViewModel(), BaseViewModel<Action, State> {
 
-    override val initialState = State()
+    private val _actions = MutableSharedFlow<Action>()
+    override val actions: SharedFlow<Action>
+        get() = _actions.asSharedFlow()
+
+    private val initialState = State()
+    private val state = MutableStateFlow(initialState)
+    override val observableState: StateFlow<State>
+        get() = state.asStateFlow()
+
+    override fun dispatch(action: Action) {
+        viewModelScope.launch {
+            Log.d(TAG, "Received Action: $action")
+            _actions.emit(action)
+        }
+    }
 
     private val reducer: Reducer<State, Change> = { state, change ->
         Log.d(TAG, "Received Change: $change\n$state")
@@ -39,7 +61,7 @@ class SearchViewModel @Inject constructor(
             is Change.ListLoaded -> state.copy(
                 isError = false,
                 isLoading = false,
-                items = change.items,
+                items = change.items.map { UiChoice(it.name, it.group) },
             )
 
             is Change.Error -> state.copy(
@@ -70,7 +92,7 @@ class SearchViewModel @Inject constructor(
 
             val itemsLoadedChange = searchQuery
                 .filterIsInstance<Action.LoadChoices>()
-                .flatMapLatest { repo.queryTimetables(it.query) }
+                .flatMapLatest { repo.queryTimetables(it.query.trim()) }
                 .map {
                     when(it) {
                         is DataResponse.Error -> Change.Error
@@ -97,6 +119,10 @@ class SearchViewModel @Inject constructor(
             delay(500)
         }
         emit(Action.LoadChoices(action.query))
+    }
+
+    companion object {
+        private const val TAG = "SearchViewModel"
     }
 
 }
