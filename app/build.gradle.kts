@@ -82,5 +82,6 @@ dependencies {
 
     implementation(project(":sources:core"))
     implementation(project(":sources:search"))
+    implementation(project(":sources:timetable"))
 
 }

@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import ru.ivmak.raspisanie_iktib.ui.theme.AppTheme
+import ru.ivmak.timetable.ui.TimetableScene
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +63,7 @@ fun MainScene(
             modifier = Modifier
                 .padding(it)
         ) {
-            Text("Android")
+            TimetableScene(navController = navController)
         }
     }
 }

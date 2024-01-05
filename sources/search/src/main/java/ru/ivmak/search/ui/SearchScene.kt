@@ -42,7 +42,8 @@ import ru.ivmak.search.core.mvi.State
 @Composable
 fun SearchScene(
     navController: NavController,
-    searchViewModel: SearchViewModel = hiltViewModel()
+    searchViewModel: SearchViewModel = hiltViewModel(),
+    onSelected: (String) -> Unit
 ) {
 
     val state: State by searchViewModel.observableState.collectAsStateWithLifecycle()
@@ -125,7 +126,7 @@ fun SearchScene(
             LazyColumn {
                 items(state.items) {
                     ListItem(
-                        modifier = Modifier.clickable { /*TODO:*/ },
+                        modifier = Modifier.clickable { onSelected.invoke(it.group) },
                         headlineContent = { Text(text = it.name) },
                     )
 
@@ -138,5 +139,5 @@ fun SearchScene(
 @Preview(showBackground = true)
 @Composable
 fun SearchScenePreview() {
-    SearchScene(rememberNavController())
+    SearchScene(rememberNavController()) {}
 }
