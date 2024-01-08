@@ -18,10 +18,10 @@ fun Timetable.parseTimeTable(): List<DayTimetable> {
                 this.week,
                 i,
                 strings[0],
-                strings.subList(1, strings.size).mapIndexed { i, lesson ->
+                strings.subList(1, strings.size).mapIndexed { index, lesson ->
                     DayTimetable.Lesson(
-                        this.table[0][i + 1],
-                        this.table[1][i + 1],
+                        this.table[0][index + 1],
+                        this.table[1][index + 1],
                         lesson
                     )
                 },

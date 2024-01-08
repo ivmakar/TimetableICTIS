@@ -15,9 +15,8 @@ class TimetableRepo @Inject constructor(
 
     suspend fun getTimetable(group: String): Flow<DataResponse<TimetableResponse>> {
         val response = dbDataSource.getTimetable(group)
-        if (response.days.isEmpty()) {
-            return networkDataSource.getTimetable(group)
-        }
+            ?: return networkDataSource.getTimetable(group)
+
         return flow {
             emit(DataResponse.Success(response))
         }
@@ -25,9 +24,11 @@ class TimetableRepo @Inject constructor(
 
     suspend fun getTimetable(group: String, week: Int): Flow<Pair<Int, DataResponse<TimetableResponse>>> {
         val response = dbDataSource.getTimetable(group)
-        if (response.days.isEmpty()) {
+            ?: return updateTimetable(group, week)
+
+        if (response.days.none { it.week == week })
             return updateTimetable(group, week)
-        }
+
         return flow {
             emit(week to DataResponse.Success(response))
         }

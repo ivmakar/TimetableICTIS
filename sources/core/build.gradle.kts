@@ -42,4 +42,12 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+
+    /* Room */
+    api("androidx.room:room-runtime:2.6.1") // Библиотека "Room"
+    api("androidx.room:room-ktx:2.6.1") // Дополнительно для Kotlin Coroutines, Kotlin Flows
+
+    /* Retrofit */
+    api("com.squareup.retrofit2:converter-gson:2.9.0")
+    api("com.squareup.retrofit2:retrofit:2.9.0")
 }
