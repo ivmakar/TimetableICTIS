@@ -17,7 +17,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import ru.ivmak.timetable.core.mvi.Action
 import ru.ivmak.timetable.core.mvi.State
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -49,7 +48,7 @@ fun TimetableScene(
         Column {
             HorizontalPager(state = pagerState) { page ->
                 DayScene(timetable = state.dayTables[page]) {
-                    timetableViewModel.dispatch(Action.UpdateTimetable(it))
+                    timetableViewModel.dispatch(it)
                 }
             }
         }

@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 import ru.ivmak.core.mvi.BaseViewModel
 import ru.ivmak.core.mvi.Reducer
 import ru.ivmak.core.utils.DataResponse
-import ru.ivmak.timetable.core.models.Response
+import ru.ivmak.timetable.core.models.TimetableResponse
 import ru.ivmak.timetable.core.mvi.Action
 import ru.ivmak.timetable.core.mvi.Change
 import ru.ivmak.timetable.core.mvi.State
@@ -67,12 +67,12 @@ class TimetableViewModel @Inject constructor(
                 is Change.Error -> state.copy(isLoading = false)
                 is Change.TimetableLoaded -> state.copy(
                     isLoading = false,
-                    type = change.response.table.type,
-                    name = change.response.table.name,
+                    type = change.response.type,
+                    name = change.response.name,
                     dayTables = change.response.weeks.flatMap { week ->
                         (0..5).toList().map { TableState.Loading(week, it) }
                     }
-                    .updateForLoaded(change.response)
+                    .updateForLoaded(change.response.days)
                 )
             }
         } else {
@@ -80,9 +80,9 @@ class TimetableViewModel @Inject constructor(
                 is Change.Loading -> state.copy(dayTables = state.dayTables.updateForLoadingResponse(change.week))
                 is Change.Error -> state.copy(dayTables = state.dayTables.updateForErrorResponse(change.week, change.e))
                 is Change.TimetableLoaded -> state.copy(
-                    type = change.response.table.type,
-                    name = change.response.table.name,
-                    dayTables = state.dayTables.updateForLoaded(change.response)
+                    type = change.response.type,
+                    name = change.response.name,
+                    dayTables = state.dayTables.updateForLoaded(change.response.days)
                 )
             }
         }
@@ -99,11 +99,22 @@ class TimetableViewModel @Inject constructor(
 
             val updateTimetableChange = actions
                 .filterIsInstance<Action.UpdateTimetable>()
+                .flatMapLatest { repo.updateTimetable(group, it.week) }
+                .map {
+                    when(it.second) {
+                        is DataResponse.Error -> Change.Error(it.first, (it.second as DataResponse.Error<TimetableResponse>).exception)
+                        is DataResponse.Success -> Change.TimetableLoaded((it.second as DataResponse.Success<TimetableResponse>).data)
+                        is DataResponse.Loading -> Change.Loading(it.first)
+                    }
+                }
+
+            val loadTimetableChange = actions
+                .filterIsInstance<Action.LoadTimetable>()
                 .flatMapLatest { repo.getTimetable(group, it.week) }
                 .map {
                     when(it.second) {
-                        is DataResponse.Error -> Change.Error(it.first, (it.second as DataResponse.Error<Response>).exception)
-                        is DataResponse.Success -> Change.TimetableLoaded((it.second as DataResponse.Success<Response>).data)
+                        is DataResponse.Error -> Change.Error(it.first, (it.second as DataResponse.Error<TimetableResponse>).exception)
+                        is DataResponse.Success -> Change.TimetableLoaded((it.second as DataResponse.Success<TimetableResponse>).data)
                         is DataResponse.Loading -> Change.Loading(it.first)
                     }
                 }
@@ -119,7 +130,7 @@ class TimetableViewModel @Inject constructor(
                     }
                 }
 
-            val allChanges = merge(updateTimetableChange, initChange)
+            val allChanges = merge(updateTimetableChange, loadTimetableChange, initChange)
 
             allChanges
                 .scan(initialState, reducer)
