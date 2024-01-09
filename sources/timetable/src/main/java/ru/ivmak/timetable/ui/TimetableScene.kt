@@ -9,24 +9,26 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import ru.ivmak.timetable.core.mvi.State
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TimetableScene(
-    navController: NavController,
     timetableViewModel: TimetableViewModel = hiltViewModel()
 ) {
 
     val state: State by timetableViewModel.observableState.collectAsStateWithLifecycle()
+
+    val openPage by remember { derivedStateOf { state.openPage } }
 
     if (state.isLoading || state.name.isEmpty() || state.type.isEmpty()) {
         Box(
@@ -54,6 +56,10 @@ fun TimetableScene(
                 }
             }
         }
+        LaunchedEffect(openPage) {
+            pagerState.scrollToPage(state.openPage)
+        }
+
     }
 
 }
@@ -61,5 +67,5 @@ fun TimetableScene(
 @Preview(showBackground = true)
 @Composable
 fun TimetableScenePreview() {
-    TimetableScene(rememberNavController())
+    TimetableScene()
 }

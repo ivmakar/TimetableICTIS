@@ -56,11 +56,10 @@ fun Date.getCalendarOfFirstWeek(): Calendar {
     return calendarOfFirstWeek
 }
 
-fun Date.getCurDayOfSemester(): Pair<Int, Int> {
+fun Date.getCurDayOfSemester(): Int {
     val calendarOfFirstWeek = this.getCalendarOfFirstWeek()
 
-    val curDay = ((this.time / (1000*60*60*24)) - (calendarOfFirstWeek.time.time / (1000*60*60*24))).toInt()
-    return curDay / 7 + 1 to curDay % 7
+    return ((this.time / (1000*60*60*24)) - (calendarOfFirstWeek.time.time / (1000*60*60*24))).toInt()
 }
 
 fun Date.toReadableText(): String {

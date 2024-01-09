@@ -7,6 +7,8 @@ data class State(
     val isLoading: Boolean = true,
     val type: String = "",
     val name: String = "",
-    val dayTables: List<TableState> = listOf(),
-    val initialPage: Int = 0
+    val initialPage: Int = 0,
+    val openPage: Int = 0,
+    val curDayOfSemester: Int,
+    val dayTables: List<TableState> = listOf()
 ) : BaseState

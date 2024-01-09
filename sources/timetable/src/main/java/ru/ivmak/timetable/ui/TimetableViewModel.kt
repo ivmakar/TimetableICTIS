@@ -45,13 +45,11 @@ class TimetableViewModel @Inject constructor(
         savedStateHandle.get<String>("group")
             ?: throw IllegalArgumentException("You have to provide group as parameter with type String when navigating to timetable")
 
-    private val curDayOfSemester = Date().getCurDayOfSemester() // first - week, second - day of week
-
     private val _actions = MutableSharedFlow<Action>(replay = 1)
     override val actions: SharedFlow<Action>
         get() = _actions.asSharedFlow()
 
-    private val initialState = State()
+    private val initialState = State(curDayOfSemester = Date().getCurDayOfSemester())
     private val state = MutableStateFlow(initialState)
     override val observableState: StateFlow<State>
         get() = state.asStateFlow()
@@ -65,43 +63,56 @@ class TimetableViewModel @Inject constructor(
 
     private val reducer: Reducer<State, Change> = { state, change ->
         Log.d(TAG, "Received Change: $change\n$state")
-        if (state.type.isEmpty() && state.name.isEmpty()) {
+
             when (change) {
-                is Change.Loading -> state.copy(isLoading = true)
-                is Change.Error -> state.copy(isLoading = false)
-                is Change.TimetableLoaded -> {
-                    val days = change.response.weeks.flatMap { week ->
-                        (0..6).toList().map { TableState.Loading(week, it) }
+                is Change.Loading -> {
+                    if (state.type.isEmpty() && state.name.isEmpty()) {
+                        state.copy(isLoading = true)
+                    } else {
+                        state.copy(dayTables = state.dayTables.updateForLoadingResponse(change.week))
                     }
-                    .updateForLoaded(change.response.days)
+                }
+                is Change.Error -> {
+                    if (state.type.isEmpty() && state.name.isEmpty()) {
+                        state.copy(isLoading = false)
+                    } else {
+                        state.copy(dayTables = state.dayTables.updateForErrorResponse(change.week, change.e))
+                    }
+                }
+                is Change.TimetableLoaded -> {
+                    val days = if (state.type.isEmpty() && state.name.isEmpty())
+                        change.response.weeks.flatMap { week ->
+                            (0..6).toList().map { TableState.Loading(week, it) }
+                        }.updateForLoaded(change.response.days)
+                    else
+                        state.dayTables.updateForLoaded(change.response.days)
+
+                    val curDayOfSemester = state.curDayOfSemester / 7 + 1 to state.curDayOfSemester % 7
                     val curPage = days.find { it.week == curDayOfSemester.first && it.dayOfWeek == curDayOfSemester.second }
                         ?: days.find { it.week > curDayOfSemester.first }
+                    val initialPage = curPage?.let { days.indexOf(it) }?: 0
                     state.copy(
                         isLoading = false,
                         type = change.response.type,
                         name = change.response.name,
                         dayTables = days,
-                        initialPage = curPage?.let { days.indexOf(it) }?: 0
+                        initialPage = initialPage,
+                        openPage = if (state.type.isEmpty() && state.name.isEmpty()) initialPage else state.openPage
                     )
                 }
-            }
-        } else {
-            when (change) {
-                is Change.Loading -> state.copy(dayTables = state.dayTables.updateForLoadingResponse(change.week))
-                is Change.Error -> state.copy(dayTables = state.dayTables.updateForErrorResponse(change.week, change.e))
-                is Change.TimetableLoaded -> {
-                    val days = state.dayTables.updateForLoaded(change.response.days)
-                    val curPage = days.find { it.week == curDayOfSemester.first && it.dayOfWeek == curDayOfSemester.second }
-                        ?: days.find { it.week > curDayOfSemester.first }
-                    state.copy(
-                        type = change.response.type,
-                        name = change.response.name,
-                        dayTables = state.dayTables.updateForLoaded(change.response.days),
-                        initialPage = curPage?.let { days.indexOf(it) }?: 0
-                    )
+
+                is Change.SelectDate -> {
+                    if (state.dayTables.isNotEmpty()) {
+                        val day = change.date.getCurDayOfSemester()
+                        val curDayOfSemester = day / 7 + 1 to day % 7
+                        val curPage = state.dayTables.find { it.week == curDayOfSemester.first && it.dayOfWeek == curDayOfSemester.second }
+                            ?: state.dayTables.find { it.week > curDayOfSemester.first }
+                        state.copy(openPage = curPage?.let { state.dayTables.indexOf(it) }?: state.initialPage)
+                    } else {
+                        state
+                    }
                 }
             }
-        }
     }
 
     init {
@@ -135,6 +146,10 @@ class TimetableViewModel @Inject constructor(
                     }
                 }
 
+            val selectDateChange = actions
+                .filterIsInstance<Action.SelectDate>()
+                .map { Change.SelectDate(it.date) }
+
             val initChange = actions
                 .filterIsInstance<Action.Init>()
                 .flatMapLatest { repo.getTimetable(group) }
@@ -146,7 +161,7 @@ class TimetableViewModel @Inject constructor(
                     }
                 }
 
-            val allChanges = merge(updateTimetableChange, loadTimetableChange, initChange)
+            val allChanges = merge(updateTimetableChange, loadTimetableChange, selectDateChange, initChange)
 
             allChanges
                 .scan(initialState, reducer)
