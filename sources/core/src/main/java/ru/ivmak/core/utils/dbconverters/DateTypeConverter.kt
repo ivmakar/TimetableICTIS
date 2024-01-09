@@ -1,4 +1,4 @@
-package ru.ivmak.core.utils
+package ru.ivmak.core.utils.dbconverters
 
 import androidx.room.TypeConverter
 import java.util.Date

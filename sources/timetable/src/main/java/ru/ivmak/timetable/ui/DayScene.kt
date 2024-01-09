@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ru.ivmak.core.utils.toReadableText
 import ru.ivmak.timetable.core.models.DayTimetable
 import ru.ivmak.timetable.core.mvi.Action
 import ru.ivmak.timetable.ui.models.TableState
@@ -88,7 +89,7 @@ fun OneDayLessonsScene(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = timetable.date)
+            Text(text = timetable.date.toReadableText())
             Spacer(modifier = Modifier
                 .width(0.dp)
                 .weight(1f))
@@ -128,7 +129,7 @@ fun DayScenePreview() {
         "134.html",
         1,
         4,
-        "Птн,01  сентября",
+        Date(1693515600000),
         listOf(
             DayTimetable.Lesson("1-я", "08:00-09:35", "пр.Дисциплины ВПК Вакансия ИКТИБ +"),
             DayTimetable.Lesson("2-я", "09:50-11:25", "пр.Дисциплины ВПК Вакансия ИКТИБ +"),

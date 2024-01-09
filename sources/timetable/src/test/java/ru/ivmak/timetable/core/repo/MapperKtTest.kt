@@ -12,11 +12,13 @@ import java.util.Date
 class MapperKtTest {
     private val lastUpdated = Date()
 
+    private val testDate = Date(1693193707000)
+
     private val dayTimetable = DayTimetable(
         group = "134.html",
         week = 1,
         dayOfWeek = 0,
-        date = "Пнд,28 августа",
+        date = testDate,
         lessons = listOf(
             DayTimetable.Lesson("1-я", "08:00-09:35", ""),
             DayTimetable.Lesson("2-я", "09:50-11:25", ""),
@@ -37,7 +39,8 @@ class MapperKtTest {
 
         val dayTimetableDTO = DayTimetableDTO(
             id = "1:0:134.html",
-            date = "Пнд,28 августа",
+            date = testDate,
+            group = "134.html",
             lastUpdated = lastUpdated,
             lessons = listOf(
                 LessonDTO("1:0:134.html", "1-я", "08:00-09:35", ""),
@@ -61,7 +64,7 @@ class MapperKtTest {
         val dayDTO = DayDTO(
             id = "1:0:134.html",
             group = "134.html",
-            date = "Пнд,28 августа",
+            date = testDate,
             lastUpdated = lastUpdated
         )
 

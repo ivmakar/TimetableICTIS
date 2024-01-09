@@ -3,8 +3,8 @@ package ru.ivmak.raspisanie_iktib.core.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import ru.ivmak.core.utils.DateTypeConverter
-import ru.ivmak.core.utils.ListIntTypeConverter
+import ru.ivmak.core.utils.dbconverters.DateTypeConverter
+import ru.ivmak.core.utils.dbconverters.ListIntTypeConverter
 import ru.ivmak.timetable.core.db.dao.TimetableDAO
 import ru.ivmak.timetable.core.db.models.DayDTO
 import ru.ivmak.timetable.core.db.models.GroupDTO

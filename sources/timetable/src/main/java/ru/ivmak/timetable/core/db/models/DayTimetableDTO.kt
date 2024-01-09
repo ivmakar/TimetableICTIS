@@ -5,7 +5,7 @@ import java.util.Date
 
 data class DayTimetableDTO(
     val id: String,
-    val date: String,
+    val date: Date,
     val group: String,
     val lastUpdated: Date,
     @Relation(

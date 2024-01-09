@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import ru.ivmak.core.mvi.BaseViewModel
 import ru.ivmak.core.mvi.Reducer
 import ru.ivmak.core.utils.DataResponse
+import ru.ivmak.core.utils.getCurDayOfSemester
 import ru.ivmak.timetable.core.models.TimetableResponse
 import ru.ivmak.timetable.core.mvi.Action
 import ru.ivmak.timetable.core.mvi.Change
@@ -31,6 +32,7 @@ import ru.ivmak.timetable.ui.models.TableState
 import ru.ivmak.timetable.ui.models.updateForErrorResponse
 import ru.ivmak.timetable.ui.models.updateForLoaded
 import ru.ivmak.timetable.ui.models.updateForLoadingResponse
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,6 +44,8 @@ class TimetableViewModel @Inject constructor(
     private val group: String =
         savedStateHandle.get<String>("group")
             ?: throw IllegalArgumentException("You have to provide group as parameter with type String when navigating to timetable")
+
+    private val curDayOfSemester = Date().getCurDayOfSemester() // first - week, second - day of week
 
     private val _actions = MutableSharedFlow<Action>(replay = 1)
     override val actions: SharedFlow<Action>
@@ -65,25 +69,37 @@ class TimetableViewModel @Inject constructor(
             when (change) {
                 is Change.Loading -> state.copy(isLoading = true)
                 is Change.Error -> state.copy(isLoading = false)
-                is Change.TimetableLoaded -> state.copy(
-                    isLoading = false,
-                    type = change.response.type,
-                    name = change.response.name,
-                    dayTables = change.response.weeks.flatMap { week ->
-                        (0..5).toList().map { TableState.Loading(week, it) }
+                is Change.TimetableLoaded -> {
+                    val days = change.response.weeks.flatMap { week ->
+                        (0..6).toList().map { TableState.Loading(week, it) }
                     }
                     .updateForLoaded(change.response.days)
-                )
+                    val curPage = days.find { it.week == curDayOfSemester.first && it.dayOfWeek == curDayOfSemester.second }
+                        ?: days.find { it.week > curDayOfSemester.first }
+                    state.copy(
+                        isLoading = false,
+                        type = change.response.type,
+                        name = change.response.name,
+                        dayTables = days,
+                        initialPage = curPage?.let { days.indexOf(it) }?: 0
+                    )
+                }
             }
         } else {
             when (change) {
                 is Change.Loading -> state.copy(dayTables = state.dayTables.updateForLoadingResponse(change.week))
                 is Change.Error -> state.copy(dayTables = state.dayTables.updateForErrorResponse(change.week, change.e))
-                is Change.TimetableLoaded -> state.copy(
-                    type = change.response.type,
-                    name = change.response.name,
-                    dayTables = state.dayTables.updateForLoaded(change.response.days)
-                )
+                is Change.TimetableLoaded -> {
+                    val days = state.dayTables.updateForLoaded(change.response.days)
+                    val curPage = days.find { it.week == curDayOfSemester.first && it.dayOfWeek == curDayOfSemester.second }
+                        ?: days.find { it.week > curDayOfSemester.first }
+                    state.copy(
+                        type = change.response.type,
+                        name = change.response.name,
+                        dayTables = state.dayTables.updateForLoaded(change.response.days),
+                        initialPage = curPage?.let { days.indexOf(it) }?: 0
+                    )
+                }
             }
         }
     }

@@ -28,12 +28,6 @@ fun TimetableScene(
 
     val state: State by timetableViewModel.observableState.collectAsStateWithLifecycle()
 
-    val pagerState = rememberPagerState(
-        pageCount = {
-            state.dayTables.size
-        }
-    )
-
     if (state.isLoading || state.name.isEmpty() || state.type.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -47,6 +41,12 @@ fun TimetableScene(
         }
 
     } else {
+        val pagerState = rememberPagerState(
+            initialPage = state.initialPage,
+            pageCount = {
+                state.dayTables.size
+            }
+        )
         Column {
             HorizontalPager(state = pagerState) { page ->
                 DayScene(timetable = state.dayTables[page]) {

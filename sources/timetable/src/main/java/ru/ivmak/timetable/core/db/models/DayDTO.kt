@@ -9,6 +9,6 @@ data class DayDTO(
     @PrimaryKey
     val id: String,
     val group: String,
-    val date: String,
+    val date: Date,
     val lastUpdated: Date
 )

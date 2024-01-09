@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.withContext
 import ru.ivmak.core.utils.DataResponse
 import ru.ivmak.timetable.core.models.TimetableResponse
-import ru.ivmak.timetable.core.models.parseTimeTable
 import ru.ivmak.timetable.core.network.TimetableApi
 import ru.ivmak.timetable.core.network.models.toTimetable
 import javax.inject.Inject

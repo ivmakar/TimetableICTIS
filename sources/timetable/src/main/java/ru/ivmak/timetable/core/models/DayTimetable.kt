@@ -6,7 +6,7 @@ data class DayTimetable(
     val group: String,
     val week: Int,
     val dayOfWeek: Int,
-    val date: String,
+    val date: Date,
     val lessons: List<Lesson>,
     val lastUpdated: Date
 ) {

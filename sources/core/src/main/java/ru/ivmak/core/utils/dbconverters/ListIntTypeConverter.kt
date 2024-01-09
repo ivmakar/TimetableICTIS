@@ -1,4 +1,4 @@
-package ru.ivmak.core.utils
+package ru.ivmak.core.utils.dbconverters
 
 import androidx.room.TypeConverter
 import com.google.gson.Gson
