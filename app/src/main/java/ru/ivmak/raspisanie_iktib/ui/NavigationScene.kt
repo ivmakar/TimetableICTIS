@@ -10,23 +10,28 @@ import androidx.navigation.navArgument
 import ru.ivmak.search.ui.SearchScene
 
 @Composable
-fun NavigationScene(startGroupId: String) {
+fun NavigationScene(
+    mainViewModel: MainViewModel,
+    startGroupId: String?
+) {
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
-        startDestination = "${Screen.Timetable.route}/{group}"
+        startDestination = if (startGroupId != null) "${Screen.Timetable.route}/{group}" else Screen.Search.route
     ) {
         composable(
             "${Screen.Timetable.route}/{group}",
-            arguments = listOf(navArgument("group") { type = NavType.StringType; defaultValue = startGroupId })
+            arguments = listOf(navArgument("group") { type = NavType.StringType; defaultValue = startGroupId?: "" })
         ) {
             MainScene(navController)
         }
         composable(Screen.Search.route) {
-            SearchScene(navController) {
+            SearchScene(navController, startGroupId) {
+                mainViewModel.setSelectedGroup(it)
                 val options = NavOptions.Builder()
                     .setLaunchSingleTop(true)
+                    .setPopUpTo(Screen.Search.route, true)
                     .build()
                 navController.navigate("${Screen.Timetable.route}/$it", options)
             }

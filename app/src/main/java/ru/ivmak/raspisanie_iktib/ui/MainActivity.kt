@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import ru.ivmak.raspisanie_iktib.ui.theme.AppTheme
 
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AppTheme {
-                NavigationScene(viewModel.group)
+                NavigationScene(viewModel, viewModel.group)
             }
         }
 
@@ -44,6 +45,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     AppTheme {
-        NavigationScene("")
+        NavigationScene(hiltViewModel(), "")
     }
 }

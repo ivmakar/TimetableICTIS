@@ -24,7 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.compose.rememberNavController
 import ru.ivmak.raspisanie_iktib.ui.theme.AppTheme
 import ru.ivmak.timetable.core.mvi.Action
@@ -38,11 +40,12 @@ fun MainScene(
     navController: NavController
 ) {
 
+    val timetableViewModel: TimetableViewModel = hiltViewModel()
+    val state by timetableViewModel.observableState.collectAsStateWithLifecycle()
+
     var showDatePicker by remember {
         mutableStateOf(false)
     }
-
-    val timetableViewModel: TimetableViewModel = hiltViewModel()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -54,10 +57,14 @@ fun MainScene(
                 ),
                 title = {
                     Text(
-                        text = "КТбо4-7",
+                        text = state.name,
                         modifier = Modifier
                             .clickable {
-                                navController.navigate(Screen.Search.route)
+                                val options = NavOptions.Builder()
+                                    .setLaunchSingleTop(true)
+                                    .setPopUpTo("${Screen.Timetable.route}/{group}", true)
+                                    .build()
+                                navController.navigate(Screen.Search.route, options)
                             },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis

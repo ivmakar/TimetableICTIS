@@ -42,6 +42,7 @@ import ru.ivmak.search.core.mvi.State
 @Composable
 fun SearchScene(
     navController: NavController,
+    groupId: String?,
     searchViewModel: SearchViewModel = hiltViewModel(),
     onSelected: (String) -> Unit
 ) {
@@ -79,17 +80,19 @@ fun SearchScene(
                 }
             },
             leadingIcon = {
-                IconButton(onClick = {
-                    if (isActive) {
-                        isActive = false
-                    } else {
-                        navController.popBackStack()
+                if (groupId != null) {
+                    IconButton(onClick = {
+                        if (isActive) {
+                            isActive = false
+                        } else {
+                            onSelected.invoke(groupId)
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
-                }) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
                 }
             }
         ) {
@@ -139,5 +142,5 @@ fun SearchScene(
 @Preview(showBackground = true)
 @Composable
 fun SearchScenePreview() {
-    SearchScene(rememberNavController()) {}
+    SearchScene(rememberNavController(), null) {}
 }
