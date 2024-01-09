@@ -16,6 +16,5 @@ dependencyResolutionManagement {
 rootProject.name = "Timetable"
 include(":app")
 include(":sources:core")
-include(":sources:scheduler")
 include(":sources:search")
 include(":sources:timetable")
