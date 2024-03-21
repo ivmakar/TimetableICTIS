@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import ru.ivmak.timetable.core.repo.GroupDataSource
 import javax.inject.Inject
 
@@ -12,18 +13,7 @@ class MainViewModel @Inject constructor(
     private val groupDataSource: GroupDataSource
 ): ViewModel() {
 
-    var group: String? = null
-        private set
-
-    var isReady = false
-        private set
-
-    init {
-        viewModelScope.launch {
-            group = groupDataSource.getSelectedGroup()
-            isReady = true
-        }
-    }
+    fun getSavedGroup(): String? = runBlocking { groupDataSource.getSelectedGroup() }
 
     fun setSelectedGroup(group: String) {
         viewModelScope.launch {

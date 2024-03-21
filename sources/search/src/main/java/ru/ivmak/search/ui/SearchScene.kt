@@ -1,5 +1,7 @@
 package ru.ivmak.search.ui
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +40,7 @@ import androidx.navigation.compose.rememberNavController
 import ru.ivmak.search.core.mvi.Action
 import ru.ivmak.search.core.mvi.State
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun SearchScene(
     navController: NavController,
@@ -51,13 +53,19 @@ fun SearchScene(
 
     var isActive by remember { mutableStateOf(false) }
 
+    BackHandler(!isActive) {
+        if (groupId != null) {
+            onSelected.invoke(groupId)
+        }
+    }
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter
     ) {
         SearchBar(
             query = state.searchQuery,
-            placeholder = { Text(text = "Placeholder") },
+            placeholder = { Text(text = "Введите группу, аудиторию, фамилию преподавателя") },
             onQueryChange = { searchViewModel.dispatch(Action.SearchQueryChanged(it)) },
             onSearch = { searchViewModel.dispatch(Action.SearchQueryChanged(it)) },
             active = isActive,
@@ -127,9 +135,11 @@ fun SearchScene(
             }
 
             LazyColumn {
-                items(state.items) {
+                items(state.items, key = { it.group }) {
                     ListItem(
-                        modifier = Modifier.clickable { onSelected.invoke(it.group) },
+                        modifier = Modifier
+                            .animateItemPlacement()
+                            .clickable { onSelected.invoke(it.group) },
                         headlineContent = { Text(text = it.name) },
                     )
 
