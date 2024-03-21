@@ -6,10 +6,9 @@
 Просмотренное расписание кешируется в локальной базе данных и его можно просматривать без доступа к интернету или во время недоступности сервера.
 
 
-https://github.com/ivmakar/TimetableICTIS/assets/42583643/b1ddf373-bbcc-4200-b222-8d36c1a50d19
+<img src="https://github.com/ivmakar/TimetableICTIS/assets/42583643/6e9fdcd4-3dd4-437b-bcba-fb2d555e3609" width="320">
 
-
-https://github.com/ivmakar/TimetableICTIS/assets/42583643/21f94d75-6fde-4334-b079-5753879a6aff
+<img src="https://github.com/ivmakar/TimetableICTIS/assets/42583643/359841a8-142e-46d3-8e34-982e63cc766f" width="320">
 
 
 ### Реализованный функционал
